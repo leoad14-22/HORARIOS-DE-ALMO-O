@@ -104,8 +104,18 @@
     background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
     border-radius: 100px; padding: 0.3rem 0.8rem;
     color: rgba(255,255,255,0.85); font-size: clamp(0.7rem, 2vw, 0.8rem); font-weight: 500;
+    cursor: pointer; transition: background 0.15s;
+    position: relative;
   }
-  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .legend-item:hover { background: rgba(255,255,255,0.15); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transition: background 0.2s; }
+  .legend-color-input {
+    position: absolute; opacity: 0; width: 100%; height: 100%;
+    top: 0; left: 0; cursor: pointer; border: none;
+  }
+  .color-hint {
+    font-size: 0.62rem; opacity: 0.6; margin-left: 0.1rem;
+  }
 
   /* MAIN */
   .main-content { max-width: 1200px; margin: 0 auto; padding: clamp(1.25rem, 3vw, 2rem) var(--px); }
@@ -194,6 +204,7 @@
     width: 22px; height: 22px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 0.55rem; font-weight: 700; color: white; flex-shrink: 0;
+    transition: background 0.2s;
   }
   .time-cell {
     font-size: clamp(0.68rem, 1.6vw, 0.78rem); font-weight: 700;
@@ -205,9 +216,6 @@
   }
   .time-cell:hover { background: #f0f2ff; }
   .time-cell[contenteditable="true"] { outline: 2px solid var(--accent); background: #fff5f5; }
-  .leo      .time-cell { color: var(--leo); }
-  .jovi     .time-cell { color: var(--jovi); }
-  .veronica .time-cell { color: var(--ver); }
 
   /* NOTE CARD */
   .note-card {
@@ -309,11 +317,10 @@
   <div class="page-header-inner">
     <h1 class="page-title">Escala de Almoço</h1>
     <p class="page-subtitle">Gerenciamento de horários · Semana em curso</p>
-    <div class="legend-strip">
-      <span class="legend-item"><span class="legend-dot" style="background:#1565c0"></span>Leo</span>
-      <span class="legend-item"><span class="legend-dot" style="background:#43a047"></span>Jovi</span>
-      <span class="legend-item"><span class="legend-dot" style="background:#d81b7a"></span>Verônica</span>
+    <div class="legend-strip" id="legendStrip">
+      <!-- Renderizado via JS -->
     </div>
+    <p style="color:rgba(255,255,255,0.4);font-size:0.65rem;margin-top:0.6rem;">🎨 Clique no nome para mudar a cor</p>
   </div>
 </div>
 
@@ -355,12 +362,38 @@
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
 
-  /* ── DADOS PADRÃO ── */
-  const pessoas = {
-    leo:  { nome: 'Leo',      cor: '#1565c0', initials: 'LE', cls: 'leo'      },
-    jovi: { nome: 'Jovi',     cor: '#43a047', initials: 'JO', cls: 'jovi'     },
-    ver:  { nome: 'Verônica', cor: '#d81b7a', initials: 'VE', cls: 'veronica' }
+  /* ── PESSOAS (cores podem ser alteradas) ── */
+  const pessoasDefault = {
+    leo:  { nome: 'Leo',      cor: '#1565c0', initials: 'LE' },
+    jovi: { nome: 'Jovi',     cor: '#43a047', initials: 'JO' },
+    ver:  { nome: 'Verônica', cor: '#d81b7a', initials: 'VE' }
   };
+
+  // Carrega cores salvas no localStorage (persistência local para cores)
+  function loadPessoasCores() {
+    try {
+      const saved = localStorage.getItem('escala_cores');
+      if (saved) {
+        const cores = JSON.parse(saved);
+        Object.keys(cores).forEach(id => {
+          if (pessoasDefault[id]) pessoasDefault[id].cor = cores[id];
+        });
+      }
+    } catch(e) {}
+  }
+  function savePessoasCores() {
+    try {
+      const cores = {};
+      Object.keys(pessoasDefault).forEach(id => { cores[id] = pessoasDefault[id].cor; });
+      localStorage.setItem('escala_cores', JSON.stringify(cores));
+    } catch(e) {}
+  }
+  loadPessoasCores();
+
+  /* ── ORDEM DOS DIAS (garante ordem correta) ── */
+  const diasOrdem = ['segunda', 'terca', 'quarta', 'quinta', 'sexta'];
+  const diasNomes = { segunda:'Segunda', terca:'Terça', quarta:'Quarta', quinta:'Quinta', sexta:'Sexta' };
+  const diasBadge = { segunda:'SEG',     terca:'TER',   quarta:'QUA',   quinta:'QUI',    sexta:'SEX'   };
 
   const defaultData = {
     segunda: [
@@ -391,8 +424,6 @@
   };
 
   const defaultNote = 'Sistema de revezamento semanal. Os horários rodam entre os colaboradores a cada dia.';
-  const diasNomes   = { segunda:'Segunda', terca:'Terça', quarta:'Quarta', quinta:'Quinta', sexta:'Sexta' };
-  const diasBadge   = { segunda:'MON',     terca:'TUE',   quarta:'WED',   quinta:'THU',    sexta:'FRI'   };
 
   let currentData = JSON.parse(JSON.stringify(defaultData));
   let currentNote = defaultNote;
@@ -414,11 +445,55 @@
     toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
   }
 
-  /* ── RENDER ── */
+  /* ── RENDER LEGENDA ── */
+  function renderLegend() {
+    const strip = document.getElementById('legendStrip');
+    strip.innerHTML = '';
+    Object.entries(pessoasDefault).forEach(([id, p]) => {
+      const item = document.createElement('label');
+      item.className = 'legend-item';
+      item.title = `Clique para mudar a cor de ${p.nome}`;
+      item.innerHTML = `
+        <span class="legend-dot" id="dot-${id}" style="background:${p.cor}"></span>
+        ${p.nome}
+        <span class="color-hint">🎨</span>
+        <input type="color" class="legend-color-input" value="${p.cor}" data-pessoa="${id}">
+      `;
+      strip.appendChild(item);
+    });
+
+    // Eventos de cor
+    strip.querySelectorAll('.legend-color-input').forEach(input => {
+      input.addEventListener('input', e => {
+        const id = e.target.dataset.pessoa;
+        const cor = e.target.value;
+        pessoasDefault[id].cor = cor;
+        document.getElementById('dot-' + id).style.background = cor;
+        // Atualiza avatares e time-cells ao vivo
+        document.querySelectorAll(`.person-avatar[data-pessoa="${id}"]`).forEach(el => {
+          el.style.background = cor;
+        });
+        document.querySelectorAll(`.time-cell[data-pessoa="${id}"]`).forEach(el => {
+          el.style.color = cor;
+        });
+      });
+      input.addEventListener('change', e => {
+        savePessoasCores();
+        showToast(`✅ Cor de ${pessoasDefault[e.target.dataset.pessoa].nome} atualizada!`);
+      });
+    });
+  }
+
+  /* ── RENDER GRID ── */
   function render() {
+    renderLegend();
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
-    Object.entries(currentData).forEach(([dia, linhas]) => {
+
+    // Usa diasOrdem para garantir a sequência correta
+    diasOrdem.forEach(dia => {
+      const linhas = currentData[dia];
+      if (!linhas) return;
       const card = document.createElement('div');
       card.className = 'day-card';
       card.innerHTML = `
@@ -431,16 +506,18 @@
           <span>Colaborador</span><span>Saída</span><span>Volta</span>
         </div>
         ${linhas.map((l, i) => {
-          const p = pessoas[l.id];
+          const p = pessoasDefault[l.id];
           return `
-          <div class="person-row ${p.cls}">
+          <div class="person-row">
             <div class="person-name">
-              <span class="person-avatar" style="background:${p.cor}" aria-hidden="true">${p.initials}</span>
+              <span class="person-avatar" data-pessoa="${l.id}" style="background:${p.cor}" aria-hidden="true">${p.initials}</span>
               <span class="person-name-text">${p.nome}</span>
             </div>
-            <span class="time-cell" data-dia="${dia}" data-idx="${i}" data-field="saida"
+            <span class="time-cell" data-dia="${dia}" data-idx="${i}" data-field="saida" data-pessoa="${l.id}"
+              style="color:${p.cor}"
               onclick="window._toggleEdit(this)" title="Clique para editar">${l.saida}</span>
-            <span class="time-cell" data-dia="${dia}" data-idx="${i}" data-field="volta"
+            <span class="time-cell" data-dia="${dia}" data-idx="${i}" data-field="volta" data-pessoa="${l.id}"
+              style="color:${p.cor}"
               onclick="window._toggleEdit(this)" title="Clique para editar">${l.volta}</span>
           </div>`;
         }).join('')}`;
