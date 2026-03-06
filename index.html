@@ -35,7 +35,7 @@
     color: var(--text);
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
-    -webkit-text-size-adjust: 100%; /* prevent iOS font inflation */
+    -webkit-text-size-adjust: 100%;
   }
 
   /* ════════════════════════════════
@@ -83,6 +83,27 @@
     white-space: nowrap;
   }
 
+  .sync-status {
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+  }
+  .sync-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #ccc;
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .sync-dot.synced  { background: #43a047; }
+  .sync-dot.syncing { background: #f4743b; animation: pulse 1s infinite; }
+  .sync-dot.error   { background: #e53935; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
   .save-btn {
     background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
     color: white;
@@ -101,7 +122,7 @@
   }
   .save-btn:hover  { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(229,57,53,0.35); }
   .save-btn:active { transform: scale(0.97); }
-  .save-btn .btn-text { /* hide text on very small screens */ }
+  .save-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
   /* ════════════════════════════════
      PAGE HEADER
@@ -182,12 +203,35 @@
   }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
+  /* ── Loading overlay ── */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(245,246,250,0.85);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   /* ════════════════════════════════
-     GRID — fluid, never overflows
+     GRID
   ════════════════════════════════ */
   .grid {
     display: grid;
-    /* 5 cols on wide, shrinks to fit, min 160px per card */
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
     gap: clamp(0.65rem, 2vw, 1rem);
     margin-bottom: 1.5rem;
@@ -204,7 +248,6 @@
     box-shadow: var(--card-shadow);
     transition: box-shadow 0.2s, transform 0.2s;
     animation: fadeUp 0.4s ease both;
-    /* prevent card from ever shrinking weirdly */
     min-width: 0;
   }
   .day-card:hover { box-shadow: 0 6px 24px rgba(30,34,64,0.12); transform: translateY(-2px); }
@@ -250,8 +293,6 @@
     flex-shrink: 0;
   }
 
-  /* ── TABLE INSIDE CARD ── */
-  /* Fixed 3-col layout: name gets remaining space, saída/volta are equal fixed width */
   .col-labels,
   .person-row {
     display: grid;
@@ -274,7 +315,6 @@
     text-align: center;
     padding: 0 2px;
   }
-  /* "Colaborador" label aligns left to match avatar+name layout */
   .col-labels span:first-child { text-align: left; padding-left: 2px; }
 
   .person-row {
@@ -315,14 +355,12 @@
     flex-shrink: 0;
   }
 
-  /* ── TIME CELL — centered under its column header ── */
   .time-cell {
     font-size: clamp(0.68rem, 1.6vw, 0.78rem);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     padding: 0.22rem 0.25rem;
     border-radius: 6px;
-    /* center the chip within the 58px column */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -407,6 +445,7 @@
     white-space: nowrap;
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { background: #c62828; }
 
   /* ════════════════════════════════
      FOOTER
@@ -423,30 +462,25 @@
   /* ════════════════════════════════
      BREAKPOINTS
   ════════════════════════════════ */
-
-  /* Large tablets / small desktops: 5 cards side by side */
   @media (min-width: 900px) {
     .grid { grid-template-columns: repeat(5, 1fr); }
   }
 
-  /* Tablets portrait */
   @media (max-width: 768px) {
     .topbar { height: 58px; }
     .logo-wrap img { height: 36px; }
     .grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr)); }
+    .sync-status { display: none; }
   }
 
-  /* Mobile landscape / large phones */
   @media (max-width: 640px) {
     .topbar-badge { display: none; }
     .grid { grid-template-columns: repeat(2, 1fr); gap: 0.65rem; }
-    /* keep col-labels and person-row padding identical so columns stay aligned */
     .col-labels,
     .person-row  { padding-left: 0.6rem; padding-right: 0.6rem; }
     .day-header  { padding: 0.75rem 0.6rem 0.55rem; }
   }
 
-  /* Small phones (≤ 380px): single column, tighter time cols */
   @media (max-width: 380px) {
     .grid { grid-template-columns: 1fr; }
     .col-labels,
@@ -456,12 +490,10 @@
     .topbar { height: 52px; }
   }
 
-  /* Wide screens: cap and center */
   @media (min-width: 1400px) {
     .main-content { padding-left: 0; padding-right: 0; }
   }
 
-  /* Touch: larger tap targets */
   @media (hover: none) {
     .time-cell { padding: 0.4rem 0.5rem; }
     .save-btn  { padding: 0.6rem 1.1rem; }
@@ -470,14 +502,24 @@
 </head>
 <body>
 
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <span>Carregando escala compartilhada…</span>
+</div>
+
 <!-- TOP BAR -->
 <nav class="topbar">
   <div class="logo-wrap">
     <img src="Grupo-Santa-Casa--990x1024.png" alt="Grupo Santa Casa de Franca">
   </div>
   <div class="topbar-right">
+    <div class="sync-status" id="syncStatus">
+      <span class="sync-dot" id="syncDot"></span>
+      <span id="syncLabel">Aguardando…</span>
+    </div>
     <span class="topbar-badge">✏️ Editável</span>
-    <button class="save-btn" onclick="salvar()">
+    <button class="save-btn" id="saveBtn" onclick="salvar()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
         <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
         <polyline points="17 21 17 13 7 13 7 21"/>
@@ -517,11 +559,14 @@
   </div>
 </div>
 
-<footer>Grupo Santa Casa de Franca &nbsp;·&nbsp; Sistema de Escalas</footer>
+<footer>Grupo Santa Casa de Franca &nbsp;·&nbsp; Sistema de Escalas &nbsp;·&nbsp; 🌐 Dados compartilhados em tempo real</footer>
 
-<div class="toast" id="toast" role="status" aria-live="polite">✅ Alterações salvas com sucesso!</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
+/* ═══════════════════════════════════════════
+   DADOS PADRÃO
+═══════════════════════════════════════════ */
 const pessoas = {
   leo:  { nome: 'Leo',     cor: '#1565c0', initials: 'LE', cls: 'leo' },
   jovi: { nome: 'Jovi',    cor: '#43a047', initials: 'JO', cls: 'jovi' },
@@ -556,20 +601,86 @@ const defaultData = {
   ]
 };
 
+const defaultNote = 'Sistema de revezamento semanal. Os horários rodam entre os colaboradores a cada dia.';
+
 const diasNomes = { segunda:'Segunda', terca:'Terça', quarta:'Quarta', quinta:'Quinta', sexta:'Sexta' };
 const diasBadge = { segunda:'MON',    terca:'TUE',   quarta:'WED',   quinta:'THU',   sexta:'FRI' };
 
-function getData() {
-  try { const s = localStorage.getItem('escala_data_v2'); return s ? JSON.parse(s) : defaultData; }
-  catch { return defaultData; }
+/* ═══════════════════════════════════════════
+   ESTADO LOCAL (em memória, sincroniza com shared storage)
+═══════════════════════════════════════════ */
+let currentData = JSON.parse(JSON.stringify(defaultData));
+let currentNote = defaultNote;
+let pendingAutoSave = null;
+
+/* ═══════════════════════════════════════════
+   SYNC STATUS UI
+═══════════════════════════════════════════ */
+function setSyncStatus(state, label) {
+  const dot   = document.getElementById('syncDot');
+  const lbl   = document.getElementById('syncLabel');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
 }
 
+/* ═══════════════════════════════════════════
+   SHARED STORAGE  (window.storage API)
+   shared = true → visível para todos os usuários
+═══════════════════════════════════════════ */
+async function loadFromStorage() {
+  try {
+    const [escalaResult, notaResult] = await Promise.all([
+      window.storage.get('escala_data_v3', true),
+      window.storage.get('nota_escala_v3', true)
+    ]);
+
+    if (escalaResult && escalaResult.value) {
+      currentData = JSON.parse(escalaResult.value);
+    }
+    if (notaResult && notaResult.value) {
+      currentNote = notaResult.value;
+    }
+    setSyncStatus('synced', 'Sincronizado');
+  } catch (e) {
+    // Chave inexistente ou erro → usa padrão
+    setSyncStatus('synced', 'Padrão carregado');
+  }
+}
+
+async function saveToStorage() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  setSyncStatus('syncing', 'Salvando…');
+  try {
+    await Promise.all([
+      window.storage.set('escala_data_v3', JSON.stringify(currentData), true),
+      window.storage.set('nota_escala_v3', currentNote, true)
+    ]);
+    setSyncStatus('synced', 'Salvo ✓');
+    showToast('✅ Alterações salvas para todos!', false);
+  } catch (e) {
+    setSyncStatus('error', 'Erro ao salvar');
+    showToast('❌ Erro ao salvar. Tente novamente.', true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* Auto-save após 1.5 s de inatividade */
+function scheduleAutoSave() {
+  clearTimeout(pendingAutoSave);
+  setSyncStatus('syncing', 'Não salvo…');
+  pendingAutoSave = setTimeout(() => saveToStorage(), 1500);
+}
+
+/* ═══════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════ */
 function render() {
-  const data = getData();
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
 
-  Object.entries(data).forEach(([dia, linhas]) => {
+  Object.entries(currentData).forEach(([dia, linhas]) => {
     const card = document.createElement('div');
     card.className = 'day-card';
     card.innerHTML = `
@@ -598,12 +709,12 @@ function render() {
     grid.appendChild(card);
   });
 
-  try {
-    const savedNote = localStorage.getItem('nota_escala_v2');
-    if (savedNote) document.getElementById('noteText').textContent = savedNote;
-  } catch {}
+  document.getElementById('noteText').textContent = currentNote;
 }
 
+/* ═══════════════════════════════════════════
+   EDIÇÃO DE CÉLULA DE HORÁRIO
+═══════════════════════════════════════════ */
 function toggleEdit(el) {
   if (el.contentEditable === 'true') return;
   el.contentEditable = 'true';
@@ -624,29 +735,61 @@ function commitEdit(el) {
   el.contentEditable = 'false';
   const val = el.textContent.trim();
   el.textContent = val || '-';
-  try {
-    const data = getData();
-    data[el.dataset.dia][parseInt(el.dataset.idx)][el.dataset.field] = val || '-';
-    localStorage.setItem('escala_data_v2', JSON.stringify(data));
-  } catch {}
+
+  const dia  = el.dataset.dia;
+  const idx  = parseInt(el.dataset.idx);
+  const field = el.dataset.field;
+  currentData[dia][idx][field] = val || '-';
+
+  scheduleAutoSave();
 }
 
+/* ═══════════════════════════════════════════
+   EDIÇÃO DA NOTA
+═══════════════════════════════════════════ */
 function makeEditable(el) {
   el.contentEditable = 'true';
   el.focus();
   el.addEventListener('blur', () => {
     el.contentEditable = 'false';
-    try { localStorage.setItem('nota_escala_v2', el.textContent.trim()); } catch {}
+    currentNote = el.textContent.trim() || defaultNote;
+    if (!el.textContent.trim()) el.textContent = currentNote;
+    scheduleAutoSave();
   }, { once: true });
 }
 
+/* ═══════════════════════════════════════════
+   BOTÃO SALVAR MANUAL
+═══════════════════════════════════════════ */
 function salvar() {
-  const t = document.getElementById('toast');
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+  clearTimeout(pendingAutoSave);
+  saveToStorage();
 }
 
-render();
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ═══════════════════════════════════════════
+   INICIALIZAÇÃO
+═══════════════════════════════════════════ */
+async function init() {
+  setSyncStatus('syncing', 'Carregando…');
+  await loadFromStorage();
+  render();
+  document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+init();
 </script>
 </body>
 </html>
