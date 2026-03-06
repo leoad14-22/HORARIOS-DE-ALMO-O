@@ -14,12 +14,29 @@
     --text: #1e2240;
     --muted: #8b90a7;
     --card-shadow: 0 2px 12px rgba(30,34,64,0.07);
-    --leo: #1565c0;
-    --jovi: #43a047;
-    --ver: #d81b7a;
+    --col-labels-bg: #fafbff;
+    --row-hover: #fafbff;
+    --time-hover: #f0f2ff;
+    --note-text-color: #555;
+    --note-hover: #f5f6fa;
     --accent: #e53935;
     --accent2: #f4743b;
     --px: clamp(1rem, 4vw, 2rem);
+    --transition-theme: background 0.25s, color 0.25s, border-color 0.25s, box-shadow 0.25s;
+  }
+
+  html.dark {
+    --bg: #0f1117;
+    --white: #1a1d2e;
+    --border: #2a2d3e;
+    --text: #e8eaf6;
+    --muted: #6b7099;
+    --card-shadow: 0 2px 12px rgba(0,0,0,0.35);
+    --col-labels-bg: #151825;
+    --row-hover: #1f2235;
+    --time-hover: #1e2240;
+    --note-text-color: #9ca3c0;
+    --note-hover: #1a1d2e;
   }
 
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -32,6 +49,7 @@
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
     -webkit-text-size-adjust: 100%;
+    transition: var(--transition-theme);
   }
 
   /* TOP BAR */
@@ -52,7 +70,9 @@
     border: 1px solid #ffd0d0; border-radius: 100px;
     padding: 0.3rem 0.75rem; font-size: 0.7rem; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap;
+    transition: var(--transition-theme);
   }
+  html.dark .topbar-badge { background: #2a1a1a; border-color: #5a2020; }
   .sync-status {
     font-size: 0.68rem; font-weight: 500; color: var(--muted);
     display: flex; align-items: center; gap: 0.3rem; white-space: nowrap;
@@ -65,6 +85,18 @@
   .sync-dot.syncing { background: #f4743b; animation: pulse 1s infinite; }
   .sync-dot.error   { background: #e53935; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .theme-btn {
+    background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.45rem 0.65rem; font-size: 0.82rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    transition: var(--transition-theme), transform 0.15s;
+    flex-shrink: 0; white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .theme-btn:hover { transform: translateY(-1px); border-color: var(--muted); }
+  .theme-btn:active { transform: scale(0.96); }
 
   .save-btn {
     background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
@@ -84,7 +116,9 @@
     background: linear-gradient(135deg, #1e2240 0%, #2d3068 100%);
     padding: clamp(1.5rem, 4vw, 2.5rem) var(--px) clamp(1.25rem, 3vw, 2rem);
     position: relative; overflow: hidden;
+    transition: var(--transition-theme);
   }
+  html.dark .page-header { background: linear-gradient(135deg, #0a0c18 0%, #12152a 100%); }
   .page-header::after {
     content: ''; position: absolute; right: -60px; top: -60px;
     width: 280px; height: 280px; border-radius: 50%;
@@ -132,7 +166,9 @@
     z-index: 999; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 1rem; font-size: 0.9rem; color: var(--muted); font-weight: 500;
+    transition: var(--transition-theme);
   }
+  html.dark .loading-overlay { background: rgba(15,17,23,0.92); }
   .spinner {
     width: 36px; height: 36px;
     border: 3px solid var(--border); border-top-color: var(--accent);
@@ -181,7 +217,7 @@
     display: grid; grid-template-columns: 1fr 58px 58px; align-items: center; gap: 0;
   }
   .col-labels {
-    padding: 0.4rem 0.75rem; background: #fafbff; border-bottom: 1px solid var(--border);
+    padding: 0.4rem 0.75rem; background: var(--col-labels-bg); border-bottom: 1px solid var(--border);
   }
   .col-labels span {
     font-size: 0.58rem; font-weight: 700; color: var(--muted);
@@ -192,7 +228,7 @@
     padding: 0.6rem 0.75rem; border-bottom: 1px solid rgba(0,0,0,0.035);
     transition: background 0.12s; min-width: 0;
   }
-  .person-row:hover { background: #fafbff; }
+  .person-row:hover { background: var(--row-hover); }
   .person-row:last-child { border-bottom: none; }
   .person-name {
     display: flex; align-items: center; gap: 0.4rem;
@@ -214,8 +250,8 @@
     transition: background 0.12s, outline 0.12s; white-space: nowrap;
     -webkit-tap-highlight-color: transparent;
   }
-  .time-cell:hover { background: #f0f2ff; }
-  .time-cell[contenteditable="true"] { outline: 2px solid var(--accent); background: #fff5f5; }
+  .time-cell:hover { background: var(--time-hover); }
+  .time-cell[contenteditable="true"] { outline: 2px solid var(--accent); background: var(--time-hover); }
 
   /* NOTE CARD */
   .note-card {
@@ -224,9 +260,10 @@
     display: flex; align-items: flex-start; gap: 0.85rem; margin-bottom: 1.5rem;
   }
   .note-icon {
-    width: 30px; height: 30px; background: #fff3f3; border-radius: 8px;
+    width: 30px; height: 30px; background: var(--col-labels-bg); border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
     font-size: 0.95rem; flex-shrink: 0;
+    border: 1px solid var(--border);
   }
   .note-body { flex: 1; min-width: 0; }
   .note-title {
@@ -234,12 +271,12 @@
     letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.25rem;
   }
   .note-text {
-    font-size: clamp(0.78rem, 2vw, 0.84rem); color: #555; line-height: 1.55;
+    font-size: clamp(0.78rem, 2vw, 0.84rem); color: var(--note-text-color); line-height: 1.55;
     cursor: pointer; padding: 2px 6px; border-radius: 6px;
     transition: background 0.12s; word-break: break-word;
   }
-  .note-text:hover { background: #f5f6fa; }
-  .note-text[contenteditable="true"] { outline: 2px solid var(--accent); background: #fff5f5; color: var(--text); }
+  .note-text:hover { background: var(--note-hover); }
+  .note-text[contenteditable="true"] { outline: 2px solid var(--accent); background: var(--note-hover); color: var(--text); }
 
   /* TOAST */
   .toast {
@@ -301,6 +338,9 @@
       <span id="syncLabel">Conectando…</span>
     </div>
     <span class="topbar-badge">✏️ Editável</span>
+    <button class="theme-btn" id="themeBtn" onclick="window._toggleTheme()" title="Alternar modo claro/escuro">
+      <span id="themeIcon">🌙</span>
+    </button>
     <button class="save-btn" id="saveBtn" onclick="window._salvar()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
         <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
@@ -344,6 +384,26 @@
 
 <!-- FIREBASE SDK (ESM via CDN) -->
 <script type="module">
+  /* ── TEMA ESCURO / CLARO ── */
+  (function() {
+    const saved = localStorage.getItem('escala_tema');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (saved === 'dark' || (!saved && prefersDark)) {
+      document.documentElement.classList.add('dark');
+    }
+  })();
+
+  window._toggleTheme = function() {
+    const html = document.documentElement;
+    const isDark = html.classList.toggle('dark');
+    localStorage.setItem('escala_tema', isDark ? 'dark' : 'light');
+    document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+  };
+
+  // Atualiza ícone ao carregar
+  document.getElementById('themeIcon').textContent =
+    document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+
   import { initializeApp }             from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
   import { getDatabase, ref, set, onValue }
                                        from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
