@@ -716,11 +716,7 @@
   }
 
   /* ── FÉRIAS ── */
-  let feriaSet = new Set(JSON.parse(localStorage.getItem('escala_ferias') || '[]'));
-
-  function saveFerias() {
-    try { localStorage.setItem('escala_ferias', JSON.stringify([...feriaSet])); } catch(e) {}
-  }
+  let feriaSet = new Set();
 
   function renderFeriasToggles() {
     const container = document.getElementById('feriaToggles');
@@ -750,7 +746,7 @@
       feriaSet.add(id);
       showToast(`🏖️ ${nome} marcado(a) de férias — removido(a) da escala.`);
     }
-    saveFerias();
+    scheduleAutoSave();
     render();
   }
 
@@ -841,7 +837,7 @@
     btn.disabled = true;
     setSyncStatus('syncing', 'Salvando…');
     try {
-      await set(ref(db, 'escala'), { data: currentData, nota: currentNote });
+      await set(ref(db, 'escala'), { data: currentData, nota: currentNote, ferias: [...feriaSet] });
       setSyncStatus('synced', 'Salvo ✓');
       showToast('✅ Alterações salvas para todos!');
     } catch (e) {
@@ -869,6 +865,7 @@
     if (val && val.data) {
       currentData = val.data;
       currentNote = val.nota || defaultNote;
+      feriaSet = new Set(val.ferias || []);
     }
     render();
     setSyncStatus('synced', 'Sincronizado');
