@@ -1,4 +1,4 @@
-<!DOCTYPE html>
++55 16 99995-9121<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -403,6 +403,76 @@
   }
   @media (min-width: 1400px) { .main-content { padding-left: 0; padding-right: 0; } }
   @media (hover: none)       { .time-cell { padding: 0.4rem 0.5rem; } .save-btn { padding: 0.6rem 1.1rem; } }
+
+  /* ── FÉRIAS PANEL ── */
+  .ferias-panel {
+    background: var(--white); border: 1px solid var(--border); border-radius: 8px;
+    padding: 1rem 1.25rem; box-shadow: var(--card-shadow);
+    display: flex; align-items: flex-start; gap: 0.85rem; margin-bottom: 1.5rem;
+    transition: var(--transition-theme);
+  }
+  .ferias-icon {
+    width: 28px; height: 28px; background: rgba(100,160,220,0.12); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; flex-shrink: 0; border: 1px solid rgba(100,160,220,0.25);
+  }
+  .ferias-body { flex: 1; min-width: 0; }
+  .ferias-title {
+    font-size: 0.6rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.14em; color: var(--muted); margin-bottom: 0.55rem;
+  }
+  .ferias-toggles { display: flex; gap: 0.55rem; flex-wrap: wrap; }
+  .ferias-toggle {
+    display: flex; align-items: center; gap: 0.45rem;
+    padding: 0.32rem 0.85rem 0.32rem 0.55rem;
+    border-radius: 5px; border: 1px solid var(--border);
+    background: transparent; color: var(--text);
+    font-size: 0.73rem; font-weight: 500; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
+    -webkit-tap-highlight-color: transparent; font-family: 'DM Sans', sans-serif;
+  }
+  .ferias-toggle:hover { border-color: rgba(100,160,220,0.4); transform: translateY(-1px); }
+  .ferias-toggle.ativo {
+    background: rgba(100,160,220,0.12);
+    border-color: rgba(100,160,220,0.45);
+    color: #5b9fd6;
+  }
+  html.dark .ferias-toggle.ativo { color: #7dbdec; background: rgba(100,160,220,0.1); }
+  .ferias-toggle .ft-avatar {
+    width: 18px; height: 18px; border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.46rem; font-weight: 700; color: white; flex-shrink: 0;
+  }
+  .ferias-toggle .ft-check {
+    width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid currentColor;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem; flex-shrink: 0; margin-left: 0.15rem;
+    transition: background 0.12s;
+  }
+  .ferias-toggle.ativo .ft-check { background: rgba(100,160,220,0.3); }
+
+  /* Person row de férias fica oculto */
+  .person-row.em-ferias { display: none; }
+
+  /* Badge de férias na legenda */
+  .legend-ferias-badge {
+    font-size: 0.55rem; background: rgba(100,160,220,0.15);
+    color: #5b9fd6; border: 1px solid rgba(100,160,220,0.35);
+    border-radius: 3px; padding: 0.05rem 0.35rem;
+    font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    margin-left: 0.15rem; vertical-align: middle;
+  }
+  html.dark .legend-ferias-badge { color: #7dbdec; }
+
+  /* Aviso no card quando há alguém de férias */
+  .ferias-notice {
+    font-size: 0.6rem; color: #5b9fd6; background: rgba(100,160,220,0.08);
+    border: 1px solid rgba(100,160,220,0.2); border-radius: 4px;
+    padding: 0.3rem 0.65rem; margin: 0.4rem 0.75rem 0.55rem;
+    display: flex; align-items: center; gap: 0.35rem;
+    font-weight: 500; letter-spacing: 0.03em;
+  }
+  html.dark .ferias-notice { color: #7dbdec; }
 </style>
 </head>
 <body>
@@ -466,6 +536,15 @@
 <div class="main-content">
   <p class="section-label">Horários da semana</p>
   <div class="grid" id="grid"></div>
+  <!-- PAINEL DE FÉRIAS -->
+  <div class="ferias-panel">
+    <div class="ferias-icon">🏖️</div>
+    <div class="ferias-body">
+      <div class="ferias-title">Férias · Marcar ausência</div>
+      <div class="ferias-toggles" id="feriaToggles"></div>
+    </div>
+  </div>
+
   <div class="note-card">
     <div class="note-icon">📌</div>
     <div class="note-body">
@@ -603,12 +682,13 @@
     const strip = document.getElementById('legendStrip');
     strip.innerHTML = '';
     Object.entries(pessoasDefault).forEach(([id, p]) => {
+      const emFerias = feriaSet.has(id);
       const item = document.createElement('label');
       item.className = 'legend-item';
       item.title = `Clique para mudar a cor de ${p.nome}`;
       item.innerHTML = `
-        <span class="legend-dot" id="dot-${id}" style="background:${p.cor}"></span>
-        ${p.nome}
+        <span class="legend-dot" id="dot-${id}" style="background:${emFerias ? '#5b9fd6' : p.cor}"></span>
+        ${p.nome}${emFerias ? ' <span class="legend-ferias-badge">férias</span>' : ''}
         <span class="color-hint">🎨</span>
         <input type="color" class="legend-color-input" value="${p.cor}" data-pessoa="${id}">
       `;
@@ -635,16 +715,60 @@
     });
   }
 
+  /* ── FÉRIAS ── */
+  let feriaSet = new Set(JSON.parse(localStorage.getItem('escala_ferias') || '[]'));
+
+  function saveFerias() {
+    try { localStorage.setItem('escala_ferias', JSON.stringify([...feriaSet])); } catch(e) {}
+  }
+
+  function renderFeriasToggles() {
+    const container = document.getElementById('feriaToggles');
+    if (!container) return;
+    container.innerHTML = '';
+    Object.entries(pessoasDefault).forEach(([id, p]) => {
+      const ativo = feriaSet.has(id);
+      const btn = document.createElement('button');
+      btn.className = 'ferias-toggle' + (ativo ? ' ativo' : '');
+      btn.title = ativo ? `Remover ${p.nome} das férias` : `Marcar ${p.nome} como de férias`;
+      btn.innerHTML = `
+        <span class="ft-avatar" style="background:${p.cor}">${p.initials}</span>
+        ${p.nome}
+        <span class="ft-check">${ativo ? '✓' : ''}</span>
+      `;
+      btn.addEventListener('click', () => toggleFerias(id));
+      container.appendChild(btn);
+    });
+  }
+
+  function toggleFerias(id) {
+    const nome = pessoasDefault[id].nome;
+    if (feriaSet.has(id)) {
+      feriaSet.delete(id);
+      showToast(`✅ ${nome} voltou das férias e está na escala.`);
+    } else {
+      feriaSet.add(id);
+      showToast(`🏖️ ${nome} marcado(a) de férias — removido(a) da escala.`);
+    }
+    saveFerias();
+    render();
+  }
+
   function render() {
     renderLegend();
+    renderFeriasToggles();
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
 
     diasOrdem.forEach(dia => {
       const linhas = currentData[dia];
       if (!linhas) return;
+      const ausentes = linhas.filter(l => feriaSet.has(l.id));
       const card = document.createElement('div');
       card.className = 'day-card';
+      const noticeHtml = ausentes.length > 0
+        ? `<div class="ferias-notice">🏖️ ${ausentes.map(l => pessoasDefault[l.id].nome).join(', ')} de férias esta semana</div>`
+        : '';
       card.innerHTML = `
         <div class="card-top"></div>
         <div class="day-header">
@@ -654,10 +778,12 @@
         <div class="col-labels">
           <span>Colaborador</span><span>Saída</span><span>Volta</span>
         </div>
+        ${noticeHtml}
         ${linhas.map((l, i) => {
           const p = pessoasDefault[l.id];
+          const emFerias = feriaSet.has(l.id);
           return `
-          <div class="person-row">
+          <div class="person-row${emFerias ? ' em-ferias' : ''}">
             <div class="person-name">
               <span class="person-avatar" data-pessoa="${l.id}" style="background:${p.cor}" aria-hidden="true">${p.initials}</span>
               <span class="person-name-text">${p.nome}</span>
