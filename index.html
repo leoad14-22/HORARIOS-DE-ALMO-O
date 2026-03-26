@@ -404,6 +404,54 @@
   @media (min-width: 1400px) { .main-content { padding-left: 0; padding-right: 0; } }
   @media (hover: none)       { .time-cell { padding: 0.4rem 0.5rem; } .save-btn { padding: 0.6rem 1.1rem; } }
 
+  /* ── BOTÃO VOLTAR AO MENU ── */
+  .back-btn {
+    position: relative; overflow: hidden;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.46rem 0.85rem;
+    font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 0.4rem;
+    text-decoration: none; white-space: nowrap;
+    flex-shrink: 0;
+    transition: border-color 0.25s, color 0.25s, box-shadow 0.25s, transform 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .back-btn .back-arrow {
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .back-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 14px rgba(201,168,76,0.18);
+    transform: translateY(-1px);
+  }
+  .back-btn:hover .back-arrow { transform: translateX(-4px); }
+  .back-btn:active { transform: scale(0.96); }
+  /* shine sweep */
+  .back-btn::after {
+    content: ''; position: absolute;
+    top: 0; left: -80%; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent);
+    transform: skewX(-18deg);
+    transition: left 0s;
+    pointer-events: none;
+  }
+  .back-btn:hover::after { left: 160%; transition: left 0.45s ease; }
+  /* pulse ring on mount */
+  @keyframes back-btn-appear {
+    0%   { opacity:0; transform: scale(0.85) translateX(-6px); }
+    60%  { opacity:1; transform: scale(1.04) translateX(2px); }
+    100% { opacity:1; transform: scale(1) translateX(0); }
+  }
+  .back-btn { animation: back-btn-appear 0.55s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
+  @media (max-width: 400px) { .back-btn .back-label { display: none; } }
+
   /* ── FÉRIAS PANEL ── */
   .ferias-panel {
     background: var(--white); border: 1px solid var(--border); border-radius: 8px;
@@ -494,6 +542,10 @@
     <img src="cyberleon white (1).png" alt="CyberLeon" class="logo-img logo-dark">
   </div>
   <div class="topbar-right">
+    <a class="back-btn" href="menu.html" title="Voltar ao portal CyberLeon">
+      <span class="back-arrow">←</span>
+      <span class="back-label">Portal</span>
+    </a>
     <div class="sync-status" id="syncStatus">
       <span class="sync-dot" id="syncDot"></span>
       <span id="syncLabel">Conectando…</span>
