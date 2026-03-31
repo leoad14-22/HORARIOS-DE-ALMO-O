@@ -809,8 +809,12 @@
     grid.innerHTML = '';
 
     diasOrdem.forEach(dia => {
-      const linhas = currentData[dia];
-      if (!linhas) return;
+      if (!currentData[dia]) return;
+      // Ordena automaticamente por horário de saída (mais cedo primeiro)
+      const linhas = [...currentData[dia]].sort((a, b) => {
+        const toMin = t => { const [h,m] = (t||'').split(':').map(Number); return (isNaN(h)?99:h)*60+(isNaN(m)?0:m); };
+        return toMin(a.saida) - toMin(b.saida);
+      });
       const ausentes = linhas.filter(l => feriaSet.has(l.id));
       const card = document.createElement('div');
       card.className = 'day-card';
