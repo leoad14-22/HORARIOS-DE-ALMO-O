@@ -455,19 +455,49 @@
   /* ── FÉRIAS PANEL ── */
   .ferias-panel {
     background: var(--white); border: 1px solid var(--border); border-radius: 8px;
-    padding: 1rem 1.25rem; box-shadow: var(--card-shadow);
-    display: flex; align-items: flex-start; gap: 0.85rem; margin-bottom: 1.5rem;
-    transition: var(--transition-theme);
+    box-shadow: var(--card-shadow); margin-bottom: 1.5rem;
+    transition: var(--transition-theme); overflow: hidden;
   }
+  .ferias-panel-header {
+    padding: 0.85rem 1.25rem;
+    display: flex; align-items: center; gap: 0.85rem;
+    cursor: pointer; user-select: none;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ferias-panel-header:hover { background: var(--row-hover); }
   .ferias-icon {
     width: 28px; height: 28px; background: rgba(100,160,220,0.12); border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
     font-size: 0.85rem; flex-shrink: 0; border: 1px solid rgba(100,160,220,0.25);
   }
-  .ferias-body { flex: 1; min-width: 0; }
+  .ferias-header-text { flex: 1; min-width: 0; }
   .ferias-title {
     font-size: 0.6rem; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.14em; color: var(--muted); margin-bottom: 0.55rem;
+    letter-spacing: 0.14em; color: var(--muted);
+  }
+  .ferias-subtitle {
+    font-size: 0.68rem; color: var(--muted); margin-top: 0.1rem;
+    font-weight: 400;
+  }
+  .ferias-chevron {
+    width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+    color: var(--muted); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    flex-shrink: 0;
+  }
+  .ferias-panel.open .ferias-chevron { transform: rotate(180deg); }
+  .ferias-body {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), padding 0.3s;
+    padding: 0 1.25rem;
+    border-top: 0px solid var(--border);
+    transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), padding 0.3s, border-top-width 0.3s;
+  }
+  .ferias-panel.open .ferias-body {
+    max-height: 200px;
+    padding: 0.75rem 1.25rem 1rem;
+    border-top-width: 1px;
   }
   .ferias-toggles { display: flex; gap: 0.55rem; flex-wrap: wrap; }
   .ferias-toggle {
@@ -511,6 +541,91 @@
     margin-left: 0.15rem; vertical-align: middle;
   }
   html.dark .legend-ferias-badge { color: #7dbdec; }
+
+  /* ── HISTÓRICO ── */
+  .history-panel {
+    background: var(--white); border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: var(--card-shadow); margin-bottom: 1.5rem;
+    transition: var(--transition-theme); overflow: hidden;
+  }
+  .history-panel-header {
+    padding: 0.85rem 1.25rem;
+    display: flex; align-items: center; gap: 0.85rem;
+    cursor: pointer; user-select: none;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .history-panel-header:hover { background: var(--row-hover); }
+  .history-icon {
+    width: 28px; height: 28px; background: rgba(201,168,76,0.1); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; flex-shrink: 0; border: 1px solid rgba(201,168,76,0.25);
+  }
+  .history-header-text { flex: 1; min-width: 0; }
+  .history-title {
+    font-size: 0.6rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.14em; color: var(--muted);
+  }
+  .history-subtitle {
+    font-size: 0.68rem; color: var(--muted); margin-top: 0.1rem; font-weight: 400;
+  }
+  .history-chevron {
+    width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+    color: var(--muted); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    flex-shrink: 0;
+  }
+  .history-panel.open .history-chevron { transform: rotate(180deg); }
+  .history-body {
+    overflow: hidden; max-height: 0;
+    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), padding 0.3s, border-top-width 0.3s;
+    padding: 0 1.25rem; border-top: 0px solid var(--border);
+  }
+  .history-panel.open .history-body {
+    max-height: 420px; padding: 0 1.25rem 1rem; border-top-width: 1px;
+  }
+  .history-scroll {
+    max-height: 360px; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  }
+  .history-scroll::-webkit-scrollbar { width: 4px; }
+  .history-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .history-empty {
+    padding: 1.5rem 0; text-align: center;
+    font-size: 0.73rem; color: var(--muted); font-weight: 400;
+  }
+  .history-entry {
+    display: flex; align-items: flex-start; gap: 0.65rem;
+    padding: 0.65rem 0; border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.3s ease both;
+  }
+  .history-entry:last-child { border-bottom: none; }
+  .history-avatar {
+    width: 24px; height: 24px; border-radius: 4px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.5rem; font-weight: 700; color: white; margin-top: 1px;
+  }
+  .history-info { flex: 1; min-width: 0; }
+  .history-desc {
+    font-size: 0.73rem; color: var(--text); line-height: 1.45; font-weight: 500;
+  }
+  .history-desc .h-day { color: var(--muted); font-weight: 400; }
+  .history-desc .h-old { text-decoration: line-through; color: var(--muted); }
+  .history-desc .h-new { color: var(--accent); font-weight: 600; }
+  .history-desc .h-ferias { color: #5b9fd6; font-weight: 600; }
+  html.dark .history-desc .h-ferias { color: #7dbdec; }
+  .history-time {
+    font-size: 0.6rem; color: var(--muted); margin-top: 0.2rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .history-clear-btn {
+    display: flex; align-items: center; gap: 0.35rem;
+    background: transparent; border: 1px solid var(--border); border-radius: 5px;
+    color: var(--muted); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.07em;
+    text-transform: uppercase; padding: 0.28rem 0.65rem; cursor: pointer;
+    margin-top: 0.75rem; transition: border-color 0.15s, color 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .history-clear-btn:hover { border-color: #cc4444; color: #cc4444; }
 
   /* Aviso no card quando há alguém de férias */
   .ferias-notice {
@@ -588,11 +703,17 @@
 <div class="main-content">
   <p class="section-label">Horários da semana</p>
   <div class="grid" id="grid"></div>
-  <!-- PAINEL DE FÉRIAS -->
-  <div class="ferias-panel">
-    <div class="ferias-icon">🏖️</div>
+  <!-- PAINEL DE FÉRIAS (colapsável) -->
+  <div class="ferias-panel" id="feriaPanel">
+    <div class="ferias-panel-header" onclick="window._toggleFeriasPanel()">
+      <div class="ferias-icon">🏖️</div>
+      <div class="ferias-header-text">
+        <div class="ferias-title">Férias · Marcar ausência</div>
+        <div class="ferias-subtitle" id="feriaSubtitle">Clique para expandir</div>
+      </div>
+      <svg class="ferias-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
     <div class="ferias-body">
-      <div class="ferias-title">Férias · Marcar ausência</div>
       <div class="ferias-toggles" id="feriaToggles"></div>
     </div>
   </div>
@@ -606,9 +727,26 @@
       </div>
     </div>
   </div>
-</div>
-
-<footer>CyberLeon &nbsp;·&nbsp; <span>Sistema de Escalas</span> &nbsp;·&nbsp; 🔥 Dados em tempo real via Firebase</footer>
+  <!-- HISTÓRICO DE ALTERAÇÕES -->
+  <div class="history-panel" id="historyPanel">
+    <div class="history-panel-header" onclick="window._toggleHistoryPanel()">
+      <div class="history-icon">🕓</div>
+      <div class="history-header-text">
+        <div class="history-title">Histórico de alterações</div>
+        <div class="history-subtitle" id="historySubtitle">Clique para expandir</div>
+      </div>
+      <svg class="history-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="history-body">
+      <div class="history-scroll" id="historyList">
+        <div class="history-empty">Nenhuma alteração registrada ainda.</div>
+      </div>
+      <button class="history-clear-btn" onclick="window._clearHistory()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        Limpar histórico
+      </button>
+    </div>
+  </div> &nbsp;·&nbsp; <span>Sistema de Escalas</span> &nbsp;·&nbsp; 🔥 Dados em tempo real via Firebase</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <!-- FIREBASE SDK (ESM via CDN) -->
@@ -791,6 +929,7 @@
 
   function toggleFerias(id) {
     const nome = pessoasDefault[id].nome;
+    const ativo = !feriaSet.has(id);
     if (feriaSet.has(id)) {
       feriaSet.delete(id);
       showToast(`✅ ${nome} voltou das férias e está na escala.`);
@@ -798,8 +937,10 @@
       feriaSet.add(id);
       showToast(`🏖️ ${nome} marcado(a) de férias — removido(a) da escala.`);
     }
+    addHistoryEntry({ tipo: 'ferias', pessoaId: id, ativo });
     scheduleAutoSave();
     render();
+    updateFeriaSubtitle();
   }
 
   function render() {
@@ -847,6 +988,7 @@
       grid.appendChild(card);
     });
     document.getElementById('noteText').textContent = currentNote;
+    updateFeriaSubtitle();
   }
 
   window._toggleEdit = function(el) {
@@ -868,8 +1010,19 @@
   function commitEdit(el) {
     el.contentEditable = 'false';
     const val = el.textContent.trim() || '-';
+    const old = currentData[el.dataset.dia][parseInt(el.dataset.idx)][el.dataset.field];
     el.textContent = val;
     currentData[el.dataset.dia][parseInt(el.dataset.idx)][el.dataset.field] = val;
+    if (val !== old) {
+      addHistoryEntry({
+        tipo: 'horario',
+        pessoaId: el.dataset.pessoa,
+        dia: el.dataset.dia,
+        field: el.dataset.field,
+        de: old,
+        para: val
+      });
+    }
     scheduleAutoSave();
   }
 
@@ -883,6 +1036,130 @@
       scheduleAutoSave();
     }, { once: true });
   };
+
+  /* ── PAINEL FÉRIAS COLAPSÁVEL ── */
+  (function() {
+    const saved = localStorage.getItem('escala_ferias_panel');
+    if (saved === 'open') {
+      const p = document.getElementById('feriaPanel');
+      if (p) p.classList.add('open');
+    }
+  })();
+
+  window._toggleFeriasPanel = function() {
+    const panel = document.getElementById('feriaPanel');
+    panel.classList.toggle('open');
+    localStorage.setItem('escala_ferias_panel', panel.classList.contains('open') ? 'open' : 'closed');
+    updateFeriaSubtitle();
+  };
+
+  function updateFeriaSubtitle() {
+    const sub = document.getElementById('feriaSubtitle');
+    if (!sub) return;
+    const panel = document.getElementById('feriaPanel');
+    const isOpen = panel.classList.contains('open');
+    if (!isOpen) {
+      const ativos = [...feriaSet].map(id => pessoasDefault[id]?.nome).filter(Boolean);
+      sub.textContent = ativos.length > 0
+        ? `🏖️ ${ativos.join(', ')} de férias · Clique para gerenciar`
+        : 'Ninguém de férias · Clique para gerenciar';
+    } else {
+      sub.textContent = 'Clique para recolher';
+    }
+  }
+
+  /* ── HISTÓRICO DE ALTERAÇÕES ── */
+  (function() {
+    const saved = localStorage.getItem('escala_history_panel');
+    if (saved === 'open') {
+      const p = document.getElementById('historyPanel');
+      if (p) p.classList.add('open');
+    }
+  })();
+
+  window._toggleHistoryPanel = function() {
+    const panel = document.getElementById('historyPanel');
+    panel.classList.toggle('open');
+    localStorage.setItem('escala_history_panel', panel.classList.contains('open') ? 'open' : 'closed');
+    renderHistorico();
+  };
+
+  let historico = [];
+
+  function addHistoryEntry(entry) {
+    historico.unshift({ ...entry, ts: Date.now() });
+    if (historico.length > 60) historico = historico.slice(0, 60);
+    saveHistoricoToFirebase();
+    renderHistorico();
+  }
+
+  async function saveHistoricoToFirebase() {
+    try {
+      await set(ref(db, 'historico'), historico.slice(0, 60));
+    } catch(e) { /* silencioso */ }
+  }
+
+  window._clearHistory = function() {
+    if (!confirm('Limpar todo o histórico de alterações?')) return;
+    historico = [];
+    saveHistoricoToFirebase();
+    renderHistorico();
+    showToast('🗑️ Histórico limpo.');
+  };
+
+  function renderHistorico() {
+    const list = document.getElementById('historyList');
+    if (!list) return;
+    const sub = document.getElementById('historySubtitle');
+
+    if (!historico.length) {
+      list.innerHTML = '<div class="history-empty">Nenhuma alteração registrada ainda.</div>';
+      if (sub) sub.textContent = 'Sem registros · Clique para expandir';
+      return;
+    }
+
+    if (sub) {
+      const panel = document.getElementById('historyPanel');
+      sub.textContent = panel.classList.contains('open')
+        ? `${historico.length} registro${historico.length > 1 ? 's' : ''} · Clique para recolher`
+        : `${historico.length} registro${historico.length > 1 ? 's' : ''} · Clique para expandir`;
+    }
+
+    const diasNomesMap = { segunda:'Segunda', terca:'Terça', quarta:'Quarta', quinta:'Quinta', sexta:'Sexta' };
+    const fieldLabel = { saida: 'Saída', volta: 'Volta' };
+
+    list.innerHTML = historico.map(entry => {
+      const p = pessoasDefault[entry.pessoaId];
+      if (!p) return '';
+      const cor = p.cor;
+      const initials = p.initials;
+      const nome = p.nome;
+      const hora = new Date(entry.ts);
+      const timeStr = hora.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' })
+        + ' ' + hora.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+
+      let desc = '';
+      if (entry.tipo === 'horario') {
+        const diaNome = diasNomesMap[entry.dia] || entry.dia;
+        const campo = fieldLabel[entry.field] || entry.field;
+        desc = `<span>${nome}</span> — ${campo} de <span class="h-day">${diaNome}</span>: `
+          + `<span class="h-old">${entry.de}</span> → <span class="h-new">${entry.para}</span>`;
+      } else if (entry.tipo === 'ferias') {
+        desc = `<span>${nome}</span> marcado(a) como `
+          + `<span class="h-ferias">${entry.ativo ? '🏖️ férias' : '✅ na escala'}</span>`;
+      } else if (entry.tipo === 'nota') {
+        desc = `Observação atualizada`;
+      }
+
+      return `<div class="history-entry">
+        <div class="history-avatar" style="background:${cor}">${initials}</div>
+        <div class="history-info">
+          <div class="history-desc">${desc}</div>
+          <div class="history-time">${timeStr}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
 
   async function saveToFirebase() {
     const btn = document.getElementById('saveBtn');
@@ -920,6 +1197,7 @@
       feriaSet = new Set(val.ferias || []);
     }
     render();
+    updateFeriaSubtitle();
     setSyncStatus('synced', 'Sincronizado');
     document.getElementById('loadingOverlay').style.display = 'none';
   }, (error) => {
@@ -927,7 +1205,14 @@
     showToast('❌ Sem conexão com o Firebase.', true);
     document.getElementById('loadingOverlay').style.display = 'none';
     render();
+    updateFeriaSubtitle();
     console.error(error);
+  });
+
+  onValue(ref(db, 'historico'), (snapshot) => {
+    const val = snapshot.val();
+    historico = Array.isArray(val) ? val : [];
+    renderHistorico();
   });
 
   setSyncStatus('syncing', 'Conectando…');
